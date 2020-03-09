@@ -32,7 +32,7 @@ class SendEmail
     // set attachment to NULL to not include an attachment
     bool send(const String& from, const String& to, const String& subject, const String& msg, const String& attachment);
 
-    ~SendEmail() {client->stop(); delete client;}
+    void close() {client->stop(); delete client;}
 };
 
 #endif
