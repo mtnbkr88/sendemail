@@ -109,6 +109,9 @@ void setup()
  
   Serial.println("\nEmail was hopefully sent.");
 
+  // close email connection
+  e.close();
+
 }
 
 void loop() { 
