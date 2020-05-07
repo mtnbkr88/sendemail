@@ -1,11 +1,11 @@
 # sendemail
-new version of sendemail that can send one attachment
+A new very simple version of sendemail that can send multiple buffer or file attachments.
 
-based on sendemail by Peter Gorasz
+Based on sendemail by Peter Gorasz.
 
-02/16/2020  Modified by Ed Williams to support sending one attachment (its what I needed)   
+05/07/2020  Modified by Ed Williams to support sending multiple buffer and/or file attachments. 
 
-the files needed are: sendemail.h and sendemail.cpp
+The files needed are: sendemail.h and sendemail.cpp
 
-the other files (TestSendEmail.ino and KittyFishing.jpg) are for testing
+The other files (TestSendEmail.ino and KittyFishing.jpg) are for testing.
 
