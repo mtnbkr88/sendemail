@@ -16,18 +16,18 @@
 *  to enable/disable email debug on Serial: Uncomment //#define DEBUG_EMAIL_PORT sendemail.h
 */
 
-const char* SSID = "WilliamsHome4"; 
-const char* PASS = "3103864271"; 
+const char* SSID = "YourSSID"; 
+const char* PASS = "YourSSIDPwd"; 
 
 // email server info for the send part, recipient address is set below
 const char* emailhost = "smtp.gmail.com";
 const int emailport = 465;
-const char* emailsendaddr = "88mtnbkr\@gmail.com";
-const char* emailsendpwd = "W3lcome4";
+const char* emailsendaddr = "YourEmail\@gmail.com";
+const char* emailsendpwd = "YourEmailPwd";
 
 // info for the email to be sent  ( the < and > are required for the from and to addresses )
-const char* emailfrom = "<88mtnbkr\@gmail.com>";
-const char* emailto = "<ewilliams41\@hotmail.com>";
+const char* emailfrom = "<FromEmail\@gmail.com>";
+const char* emailto = "<ToEmail\@hotmail.com>";
 
 // Setup static IP...
 // Set your Static IP address
@@ -84,17 +84,44 @@ void setup()
   SD_MMC.begin();
   // Done mounting SD card
 
+  // Create an attachment buffer to send with email
+  char attach1name[100];
+  strcpy( attach1name, "KittyFishing1.jpg" );
+  size_t attach1bufferlen = sizeof(KittyFishing);
+  uint8_t * attach1buffer = (uint8_t*) malloc( attach1bufferlen );
+  memcpy( attach1buffer, (const uint8_t *) KittyFishing, attach1bufferlen );
+
+  // Create another attachment buffer to send with email
+  char attach2name[100];
+  strcpy( attach2name, "KittyFishing2.jpg" );
+  size_t attach2bufferlen = sizeof(KittyFishing);
+  uint8_t * attach2buffer = (uint8_t*) malloc( attach2bufferlen );
+  memcpy( attach2buffer, (const uint8_t *) KittyFishing, attach2bufferlen );
+
+
   // Create an attachment file to send with email
-  File kitty = SD_MMC.open("/KittyFishing.jpg","w");
+  File kitty;
+
+  char attach3name[100];
+  strcpy( attach3name, "/KittyFishing3.jpg" );
+  kitty = SD_MMC.open(attach3name,"w");
+  kitty.write( (const uint8_t *) KittyFishing, sizeof(KittyFishing) );
+  kitty.close();
+
+  delay(3);
+
+  // Create another attachment file to send with email
+  char attach4name[100];
+  strcpy( attach4name, "/KittyFishing4.jpg" );
+  kitty = SD_MMC.open(attach4name,"w");
   kitty.write( (const uint8_t *) KittyFishing, sizeof(KittyFishing) );
   kitty.close();
 
   delay(3);
 
   // sendemail stuff
-  String msg = "This is a test email.\r\nHopefully the attachment made it too.";
+  String msg = "This is a test email.\r\nHopefully the attachments made it too.";
   String subject = "Test Email";
-  String attachment = "/KittyFishing.jpg";
 
   Serial.print("\nHopefully it will email:\n");
   Serial.println(msg);
@@ -102,16 +129,35 @@ void setup()
   // create SendEmail object 
   SendEmail e( emailhost, emailport, emailsendaddr, emailsendpwd, 5000, true); 
 
-  // Send Email
-  Serial.println("\nSendEmail object created, now trying to send...");
+  // add attachments to email
+  Serial.println("\nAdding email attachment 1...");
+  e.attachbuffer( attach1name, (char *) attach1buffer, attach1bufferlen );
 
-  e.send( emailfrom, emailto, subject, msg, attachment );
- 
-  Serial.println("\nEmail was hopefully sent.");
+  Serial.println("\nAdding email attachment 2...");
+  e.attachbuffer( attach2name, (char *) attach2buffer, attach2bufferlen );
+
+  Serial.println("\nAdding email attachment 3...");
+  e.attachfile( attach3name );
+
+  Serial.println("\nAdding email attachment 4...");
+  e.attachfile( attach4name );
+
+  // Send Email
+  Serial.println("\nSending email...");
+
+  bool result = e.send( emailfrom, emailto, subject, msg );
+
+  if ( result ) { 
+    Serial.println("\nEmail successfully sent.");
+  } else {
+    Serial.println("\nSending email failed.");
+  }
 
   // close email connection
   e.close();
 
+  free( attach1buffer );
+  free( attach2buffer );
 }
 
 void loop() { 
