@@ -41,7 +41,7 @@ class SendEmail
     int attachbuffercount;  // current number of buffer attachments
     static const int attachbuffermaxcount = 10;  // max number of buffers that can be attached
     struct attachbufferitem {
-      char buffername[100];  // name for buffer
+      char * buffername;  // name for buffer
       char * buffer;  // pointer to buffer
       size_t buffersize;  // number of bytes in buffer
     };
@@ -52,7 +52,7 @@ class SendEmail
     int attachfilecount;  // current number of file attachments
     static const int attachfilemaxcount = 10;  // max number of file that can be attached
     struct attachfileitem {
-      char filename[100];  // name for file
+      char * filename;  // name for file
     };
     attachfileitem attachfileitems[attachfilemaxcount];
 #endif
