@@ -4,6 +4,8 @@
  *  This version can send text or binary objects (jpg, avi) from memory as attachments
  *  and can send files from the SD card mounted on /sdcard.
  *  
+ *  *** Uncomment the #include if the below is moved back into sendemail.cpp ***
+ *
  */
 
 #include "sendemail.h"
@@ -27,7 +29,8 @@ String SendEmail::readClient()
 
 void SendEmail::attachbuffer(char * name, char * bufptr, size_t bufsize)
 {
-  strcpy( attachbufferitems[attachbuffercount].buffername, name );
+  attachbufferitems[attachbuffercount].buffername = (char *) malloc( strlen(name)+1 );
+  strcpy( attachbufferitems[attachbuffercount].buffername, name ); 
   attachbufferitems[attachbuffercount].buffer = bufptr;
   attachbufferitems[attachbuffercount].buffersize = bufsize;
   
@@ -37,7 +40,9 @@ void SendEmail::attachbuffer(char * name, char * bufptr, size_t bufsize)
 #ifdef USING_SD_CARD
 void SendEmail::attachfile(char * name)
 {
-  strcpy( attachfileitems[attachfilecount].filename, name );
+  attachfileitems[attachfilecount].filename = (char *) malloc( strlen(name)+8 );
+  strcpy( attachfileitems[attachfilecount].filename, "/sdcard" );
+  strcat( attachfileitems[attachfilecount].filename, name );
   
   attachfilecount++;
 }
@@ -227,8 +232,6 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
 #endif
   // process buffer attachments
   for ( int i = 0; i < attachbuffercount; i++ ) {
-    char aname[100];
-    strcpy( aname, attachbufferitems[i].buffername );
     char * pos = attachbufferitems[i].buffer;
     size_t alen = attachbufferitems[i].buffersize;
     base64 b;
@@ -237,7 +240,7 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
     buffer += F("Content-Type: application/octet-stream\r\n");
     buffer += F("Content-Transfer-Encoding: base64\r\n");
     buffer += F("Content-Disposition: attachment;filename=\"");
-    buffer += aname ;
+    buffer += attachbufferitems[i].buffername;
     buffer += F("\"\r\n");
     client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
@@ -284,6 +287,8 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
       // read data from buffer
       if ( flen > 0 ) memcpy( fdata, pos, flen ); 
       bytecount = 0;
+      free( attachbufferitems[i].buffername );
+      attachbufferitems[i].buffername = NULL;
     }
     free( fdata );
   }
@@ -293,22 +298,18 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
   for ( int i = 0; i < attachfilecount; i++ ) {
     FILE *atfile = NULL;
     char aname[110];
-    char * pos = NULL;
+    char * pos = NULL;  // points to actual file name
     size_t flen;
     base64 b;
-    // full path to file on SD card
-    strcpy( aname, "/sdcard" );
-    strcat( aname, attachfileitems[i].filename );
-    if ( atfile = fopen(aname, "r") ) {
+    if ( atfile = fopen(attachfileitems[i].filename, "r") ) {
       // get filename from attachment name
-      pos = strrchr( aname, '/' );
-      strcpy( aname, pos+1 );
+      pos = strrchr( attachfileitems[i].filename, '/' ) + 1;
       // attachment will be pulled from the file named
       buffer = F("\r\n--{BOUNDARY}\r\n");
       buffer += F("Content-Type: application/octet-stream\r\n");
       buffer += F("Content-Transfer-Encoding: base64\r\n");
       buffer += F("Content-Disposition: attachment;filename=\"");
-      buffer += aname ;
+      buffer += pos ;
       buffer += F("\"\r\n");
       client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
@@ -349,6 +350,8 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
         bytecount = 0;
         delay(10);
         flen = fread( fdata, 1, 570, atfile );
+        free( attachfileitems[i].filename );
+        attachfileitems[i].filename = NULL;
       }
       fclose( atfile );
       free( fdata );
