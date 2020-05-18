@@ -48,7 +48,6 @@ void SendEmail::attachfile(char * name)
 }
 #endif
 
-
 bool SendEmail::send(const String& from, const String& to, const String& subject, const String& msg)
 {
   if (!host.length())
@@ -287,8 +286,6 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
       // read data from buffer
       if ( flen > 0 ) memcpy( fdata, pos, flen ); 
       bytecount = 0;
-      free( attachbufferitems[i].buffername );
-      attachbufferitems[i].buffername = NULL;
     }
     free( fdata );
   }
@@ -350,8 +347,6 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
         bytecount = 0;
         delay(10);
         flen = fread( fdata, 1, 570, atfile );
-        free( attachfileitems[i].filename );
-        attachfileitems[i].filename = NULL;
       }
       fclose( atfile );
       free( fdata );
@@ -373,3 +368,25 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
 #endif
   return true;
 }
+
+void SendEmail::close() {
+
+  // cleanup buffer attachments
+  for ( int i = 0; i < attachbuffercount; i++ ) {
+    free( attachbufferitems[i].buffername );
+    attachbufferitems[i].buffername = NULL;
+  }
+
+#ifdef USING_SD_CARD
+  // cleanup file attachments
+  for ( int i = 0; i < attachfilecount; i++ ) {
+    free( attachfileitems[i].filename );
+    attachfileitems[i].filename = NULL;
+  }
+#endif
+  
+  client->stop();
+  delete client;
+
+}
+
