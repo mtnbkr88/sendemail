@@ -66,7 +66,7 @@ class SendEmail
     
     bool send(const String& from, const String& to, const String& subject, const String& msg);
 
-    void close() {client->stop(); delete client;}
+    void close();
 };
 
 #endif
