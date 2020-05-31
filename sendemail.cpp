@@ -54,6 +54,8 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
   {
     return false;
   }
+  String buffer2((char *)0);  // create String without memory allocation
+  buffer2.reserve(800);  // now allocate bytes for string, really should only use 780 of it
   client->stop();
   client->setTimeout(timeout);
   // smtp connect
@@ -249,13 +251,14 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
     // read data from buffer, base64 encode and send it
     // 3 binary bytes (57) becomes 4 base64 bytes (76)
     // plus CRLF is ideal for one line of MIME data
-    // 570 byes will be read at a time and sent as ten lines of base64 data
+    // 570 bytes will be read at a time and sent as ten lines of base64 data
     size_t flen = 570;  
     uint8_t * fdata = (uint8_t*) malloc( flen );
     if ( alen < flen ) flen = alen;
     // read data from buffer
     memcpy( fdata, pos, flen ); 
-    String buffer2 = "";
+    delay(10);
+    buffer2 = "";
     size_t bytecount = 0;
     while ( flen > 0 ) {
       while ( flen > 56 ) {
@@ -268,7 +271,7 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
         flen -= 57;
       }
       if ( flen > 0 ) {
-        // convert last set of byes to base64
+        // convert last set of bytes to base64
         buffer = b.encode( fdata+bytecount, flen );
         buffer2 += buffer;
         // tack on CRLF
@@ -288,6 +291,7 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
       bytecount = 0;
     }
     free( fdata );
+    fdata = NULL;
   }
 
 #ifdef USING_SD_CARD
@@ -316,12 +320,12 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
       // read data from file, base64 encode and send it
       // 3 binary bytes (57) becomes 4 base64 bytes (76)
       // plus CRLF is ideal for one line of MIME data
-      // 570 byes will be read at a time and sent as ten lines of base64 data
-      uint8_t * fdata = NULL;  
-      fdata = (uint8_t*) malloc( 570 );
+      // 570 bytes will be read at a time and sent as ten lines of base64 data
+      uint8_t * fdata = (uint8_t*) malloc( 570 );
       // read data from file
       flen = fread( fdata, 1, 570, atfile );
-      String buffer2 = "";
+      delay(10);
+      buffer2 = "";
       int lc = 0;
       size_t bytecount = 0;
       while ( flen > 0 ) {
@@ -335,7 +339,7 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
           flen -= 57;
         }
         if ( flen > 0 ) {
-          // convert last set of byes to base64
+          // convert last set of bytes to base64
           buffer = b.encode( fdata+bytecount, flen );
           buffer2 += buffer;
           // tack on CRLF
@@ -350,6 +354,7 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
       }
       fclose( atfile );
       free( fdata );
+      fdata = NULL;
     } 
   }
 #endif
