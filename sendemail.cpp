@@ -4,8 +4,6 @@
  *  This version can send text or binary objects (jpg, avi) from memory as attachments
  *  and can send files from the SD card mounted on /sdcard.
  *  
- *  *** Uncomment the #include if the below is moved back into sendemail.cpp ***
- *
  */
 
 #include "sendemail.h"
