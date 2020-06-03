@@ -48,6 +48,7 @@ void SendEmail::attachfile(char * name)
 }
 #endif
 
+
 bool SendEmail::send(const String& from, const String& to, const String& subject, const String& msg)
 {
   if (!host.length())
@@ -60,7 +61,7 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
   client->setTimeout(timeout);
   // smtp connect
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("Connecting: ");
+  Serial.print(F("Connecting: "));
   Serial.print(host);
   Serial.print(":");
   Serial.println(port);
@@ -71,7 +72,7 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
   }
   String buffer = readClient();
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("SERVER->CLIENT: ");
+  Serial.print(F("SERVER->CLIENT: "));
   Serial.println(buffer);
 #endif
   // note: F(..) as used below puts the string in flash instead of RAM
@@ -83,12 +84,12 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
   buffer += client->localIP();
   client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("CLIENT->SERVER: ");
+  Serial.print(F("CLIENT->SERVER: "));
   Serial.println(buffer);
 #endif
   buffer = readClient();
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("SERVER->CLIENT: ");
+  Serial.print(F("SERVER->CLIENT: "));
   Serial.println(buffer);
 #endif
   if (!buffer.startsWith(F("250")))
@@ -100,12 +101,12 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
     buffer = F("AUTH LOGIN");
     client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("CLIENT->SERVER: ");
+  Serial.print(F("CLIENT->SERVER: "));
   Serial.println(buffer);
 #endif
     buffer = readClient();
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("SERVER->CLIENT: ");
+  Serial.print(F("SERVER->CLIENT: "));
   Serial.println(buffer);
 #endif
     if (!buffer.startsWith(F("334")))
@@ -117,12 +118,12 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
     buffer = b.encode(buffer);
     client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("CLIENT->SERVER: ");
+  Serial.print(F("CLIENT->SERVER: "));
   Serial.println(buffer);
 #endif
     buffer = readClient();
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("SERVER->CLIENT: ");
+  Serial.print(F("SERVER->CLIENT: "));
   Serial.println(buffer);
 #endif
     if (!buffer.startsWith(F("334")))
@@ -133,12 +134,12 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
     buffer = b.encode(buffer);
     client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("CLIENT->SERVER: ");
+  Serial.print(F("CLIENT->SERVER: "));
   Serial.println(buffer);
 #endif
     buffer = readClient();
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("SERVER->CLIENT: ");
+  Serial.print(F("SERVER->CLIENT: "));
   Serial.println(buffer);
 #endif
     if (!buffer.startsWith(F("235")))
@@ -151,12 +152,12 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
   buffer += from;
   client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("CLIENT->SERVER: ");
+  Serial.print(F("CLIENT->SERVER: "));
   Serial.println(buffer);
 #endif
   buffer = readClient();
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("SERVER->CLIENT: ");
+  Serial.print(F("SERVER->CLIENT: "));
   Serial.println(buffer);
 #endif
   if (!buffer.startsWith(F("250")))
@@ -167,12 +168,12 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
   buffer += to;
   client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("CLIENT->SERVER: ");
+  Serial.print(F("CLIENT->SERVER: "));
   Serial.println(buffer);
 #endif
   buffer = readClient();
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("SERVER->CLIENT: ");
+  Serial.print(F("SERVER->CLIENT: "));
   Serial.println(buffer);
 #endif
   if (!buffer.startsWith(F("250")))
@@ -182,12 +183,12 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
   buffer = F("DATA");
   client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("CLIENT->SERVER: ");
+  Serial.print(F("CLIENT->SERVER: "));
   Serial.println(buffer);
 #endif
   buffer = readClient();
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("SERVER->CLIENT: ");
+  Serial.print(F("SERVER->CLIENT: "));
   Serial.println(buffer);
 #endif
   if (!buffer.startsWith(F("354")))
@@ -198,21 +199,21 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
   buffer += from;
   client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("CLIENT->SERVER: ");
+  Serial.print(F("CLIENT->SERVER: "));
   Serial.println(buffer);
 #endif
   buffer = F("To: ");
   buffer += to;
   client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("CLIENT->SERVER: ");
+  Serial.print(F("CLIENT->SERVER: "));
   Serial.println(buffer);
 #endif
   buffer = F("Subject: ");
   buffer += subject;
   client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("CLIENT->SERVER: ");
+  Serial.print(F("CLIENT->SERVER: "));
   Serial.println(buffer);
 #endif
   // setup to send message body
@@ -222,13 +223,13 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
   buffer += F("Content-Type: text/plain\r\n");
   client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("CLIENT->SERVER: ");
+  Serial.print(F("CLIENT->SERVER: "));
   Serial.println(buffer);
 #endif
   buffer = msg;
   client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("CLIENT->SERVER: ");
+  Serial.print(F("CLIENT->SERVER: "));
   Serial.println(buffer);
 #endif
   // process buffer attachments
@@ -245,8 +246,9 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
     buffer += F("\"\r\n");
     client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("CLIENT->SERVER: ");
+  Serial.print(F("CLIENT->SERVER: "));
   Serial.println(buffer);
+  size_t bytessent = 0;
 #endif
     // read data from buffer, base64 encode and send it
     // 3 binary bytes (57) becomes 4 base64 bytes (76)
@@ -263,8 +265,7 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
     while ( flen > 0 ) {
       while ( flen > 56 ) {
         // convert to base64 in 57 byte chunks
-        buffer = b.encode( fdata+bytecount, 57 );
-        buffer2 += buffer;
+        buffer2 += b.encode( fdata+bytecount, 57 );
         // tack on CRLF
         buffer2 += "\r\n";
         bytecount += 57;
@@ -272,13 +273,16 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
       }
       if ( flen > 0 ) {
         // convert last set of bytes to base64
-        buffer = b.encode( fdata+bytecount, flen );
-        buffer2 += buffer;
+        buffer2 += b.encode( fdata+bytecount, flen );
         // tack on CRLF
         buffer2 += "\r\n";
       }
       // send the lines in buffer
       client->println( buffer2 );
+#ifdef DEBUG_EMAIL_PORT
+  bytessent += bytecount + flen;
+  Serial.print(F(" bytes sent so far: ")); Serial.println(bytessent);
+#endif
       buffer2 = "";
       delay(10);
       // calculate bytes left to send
@@ -314,8 +318,9 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
       buffer += F("\"\r\n");
       client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("CLIENT->SERVER: ");
+  Serial.print(F("CLIENT->SERVER: "));
   Serial.println(buffer);
+  size_t bytessent = 0;
 #endif
       // read data from file, base64 encode and send it
       // 3 binary bytes (57) becomes 4 base64 bytes (76)
@@ -331,8 +336,7 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
       while ( flen > 0 ) {
         while ( flen > 56 ) {
           // convert to base64 in 57 byte chunks
-          buffer = b.encode( fdata+bytecount, 57 );
-          buffer2 += buffer;
+          buffer2 += b.encode( fdata+bytecount, 57 );
           // tack on CRLF
           buffer2 += "\r\n";
           bytecount += 57;
@@ -340,13 +344,16 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
         }
         if ( flen > 0 ) {
           // convert last set of bytes to base64
-          buffer = b.encode( fdata+bytecount, flen );
-          buffer2 += buffer;
+          buffer2 += b.encode( fdata+bytecount, flen );
           // tack on CRLF
           buffer2 += "\r\n";
         }
         // send the lines in buffer
         client->println( buffer2 );
+#ifdef DEBUG_EMAIL_PORT
+  bytessent += bytecount + flen;
+  Serial.print(F(" bytes sent so far: ")); Serial.println(bytessent);
+#endif
         buffer2 = "";
         bytecount = 0;
         delay(10);
@@ -362,13 +369,13 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
   buffer = F("\r\n--{BOUNDARY}--\r\n.");
   client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("CLIENT->SERVER: ");
+  Serial.print(F("CLIENT->SERVER: "));
   Serial.println(buffer);
 #endif
   buffer = F("QUIT");
   client->println(buffer);
 #ifdef DEBUG_EMAIL_PORT
-  Serial.print("CLIENT->SERVER: ");
+  Serial.print(F("CLIENT->SERVER: "));
   Serial.println(buffer);
 #endif
   return true;
@@ -392,6 +399,4 @@ void SendEmail::close() {
   
   client->stop();
   delete client;
-
 }
-
