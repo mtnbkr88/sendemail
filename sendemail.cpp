@@ -216,7 +216,11 @@ bool SendEmail::send(const String& from, const String& to, const String& subject
 #endif
   // setup to send message body
   buffer = F("MIME-Version: 1.0\r\n");
-  buffer += F("Content-Type: multipart/mixed; boundary=\"{BOUNDARY}\"\r\n\r\n");
+  if ( attachbuffercount > 0 ) {
+    buffer += F("Content-Type: multipart/mixed; boundary=\"{BOUNDARY}\"\r\n\r\n");  
+  } else {
+    buffer += F("Content-Type: multipart/alternative; boundary=\"{BOUNDARY}\"\r\n\r\n");  
+  }
   buffer += F("--{BOUNDARY}\r\n");
   buffer += F("Content-Type: text/plain\r\n");
   client->println(buffer);
